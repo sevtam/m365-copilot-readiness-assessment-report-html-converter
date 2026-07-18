@@ -16,6 +16,12 @@ Its role is strictly:
 2. Visualize that output interactively.
 3. Export a polished single-file HTML report for easier reading and sharing.
 
+## Disclaimer
+
+This tool is provided **"as is"**, without warranties or guarantees of any kind.
+The author assumes no responsibility or liability for decisions, actions, or outcomes based on its output.
+You are responsible for validating all assessment results and recommendations before acting on them.
+
 ## Highlights
 
 - Interactive dashboard views for readiness, risk, and capability posture
@@ -78,7 +84,6 @@ If your file does not come from the Microsoft readiness assessment workflow, som
 For full walkthrough instructions, see:
 
 - [HOW_TO_USE.md](HOW_TO_USE.md)
-
 
 ## License
 

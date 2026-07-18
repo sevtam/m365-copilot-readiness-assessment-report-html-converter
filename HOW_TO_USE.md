@@ -12,6 +12,11 @@ Then upload the CSV/XLSX produced by that tool into this app.
 
 This app does not run readiness checks itself - it only converts assessment output into an interactive dashboard and exportable HTML for easier reading.
 
+## Disclaimer
+
+This tool is provided **"as is"**. No warranty is provided, and the author accepts no responsibility for outcomes based on this tool's output.
+Always validate findings and recommendations before making operational, security, or compliance decisions.
+
 ## 1. Start the app
 
 ```powershell
