@@ -111,7 +111,6 @@ If your file does not come from the Microsoft readiness assessment workflow, som
 For full walkthrough instructions, see:
 
 - [HOW_TO_USE.md](HOW_TO_USE.md)
-- [PUBLISHING_GUIDE.md](PUBLISHING_GUIDE.md)
 
 ## License
 
