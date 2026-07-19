@@ -651,14 +651,9 @@ def build_html_report(
     html_parts.append("</div>")
 
     export_df = filtered_df.copy()
-    if "link_url" in export_df.columns:
-        link_texts = export_df["link_url"].astype(str)
-        if "link_text" in export_df.columns:
-            link_texts = export_df["link_text"].fillna(export_df["link_url"]).astype(str)
-        export_df["reference_link"] = [
-            f"<a href='{url}' target='_blank'>{txt}</a>" if str(url).strip() and str(url).lower() != "nan" else ""
-            for txt, url in zip(link_texts, export_df["link_url"])
-        ]
+    cols_to_remove = [c for c in ["link_text", "link_url", "reference_link"] if c in export_df.columns]
+    if cols_to_remove:
+        export_df = export_df.drop(columns=cols_to_remove)
 
     html_parts.append("<div class='section'><h2>Filtered findings</h2>")
     html_parts.append("<div class='table-toolbar'>")
