@@ -30,7 +30,7 @@ py -3 -m streamlit run app.py
 
 ## 3. Explore dashboard views
 
-- **Executive Overview**: high-level readiness visuals
+- **Executive Overview**: high-level readiness visualisations
 - **Risk & Recommendations**: severity, category, service, and capability comparisons
 - **Data Explorer**: full findings table with export options
 
@@ -54,7 +54,7 @@ You can control what appears in the output:
 
 ## 6. Export a premium single HTML report
 
-1. Go to **Export customization**.
+1. Go to the **Export customisation** section (labelled **Export customization** in the app UI).
 2. Set report title.
 3. Choose theme:
    - Aurora Light
