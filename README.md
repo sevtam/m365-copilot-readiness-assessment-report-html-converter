@@ -35,7 +35,7 @@ You are responsible for validating all assessment results and recommendations be
 - Column selection for findings table (`service`, `feature`, `status`, `priority`, `observation`, `recommendation`)
 - Report KPI selection (choose which KPI cards appear in exported HTML)
 - Premium export to **single HTML file** with:
-  - theme selection
+  - theme selection (`Aurora Light`, `Midnight`, `Forest Glass`, `Boardroom Contrast`, `Copilot`)
   - Copilot-inspired visual accents across all themes
   - custom logo
   - embedded charts
@@ -97,6 +97,14 @@ If your file does not come from the Microsoft readiness assessment workflow, som
 - By category line chart (needs attention)
 - Top services by status
 - Licensed capability vs configured capability
+
+## Theme Notes
+
+- **Aurora Light**: vibrant modern light theme
+- **Midnight**: premium dark theme
+- **Forest Glass**: green/teal glass style
+- **Boardroom Contrast**: neutral executive contrast
+- **Copilot**: full multi-color Copilot-inspired gradients and transitions
 
 ## Usage Guide
 

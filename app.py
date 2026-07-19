@@ -25,45 +25,55 @@ CANONICAL_COLUMNS = {
 }
 
 EXPORT_THEMES = {
-    "Modern Light": {
-        "bg": "#f4f7fb",
+    "Aurora Light": {
+        "bg": "#eef4ff",
         "surface": "#ffffff",
-        "surface_alt": "#f8fafc",
-        "text": "#0f172a",
-        "muted": "#475569",
-        "accent": "#2563eb",
-        "border": "#dbe3ef",
-        "grid": "#dbe3ef",
+        "surface_alt": "#f4f8ff",
+        "text": "#0b1a3a",
+        "muted": "#3b4f78",
+        "accent": "#2a63f6",
+        "border": "#d6e4ff",
+        "grid": "#d8e4fb",
     },
     "Midnight": {
-        "bg": "#0b1220",
-        "surface": "#111a2b",
-        "surface_alt": "#17233a",
-        "text": "#e2e8f0",
-        "muted": "#94a3b8",
-        "accent": "#38bdf8",
-        "border": "#263246",
-        "grid": "#31435f",
+        "bg": "#070d18",
+        "surface": "#0f172a",
+        "surface_alt": "#18253f",
+        "text": "#e7efff",
+        "muted": "#9db0d0",
+        "accent": "#57b9ff",
+        "border": "#2b3f64",
+        "grid": "#324a74",
     },
-    "Emerald": {
-        "bg": "#f2fbf8",
-        "surface": "#ffffff",
-        "surface_alt": "#ecfdf5",
-        "text": "#052e2b",
-        "muted": "#166534",
-        "accent": "#059669",
-        "border": "#b7ead8",
-        "grid": "#b7ead8",
+    "Forest Glass": {
+        "bg": "#ecfff8",
+        "surface": "#f9fffc",
+        "surface_alt": "#ecfbf4",
+        "text": "#073329",
+        "muted": "#16614f",
+        "accent": "#00a884",
+        "border": "#bdeedc",
+        "grid": "#c6ecd9",
     },
-    "Executive Contrast": {
-        "bg": "#ffffff",
+    "Boardroom Contrast": {
+        "bg": "#f2f2f2",
         "surface": "#ffffff",
-        "surface_alt": "#f5f5f5",
-        "text": "#111111",
-        "muted": "#333333",
-        "accent": "#7c3aed",
-        "border": "#bdbdbd",
-        "grid": "#d6d6d6",
+        "surface_alt": "#ececec",
+        "text": "#141414",
+        "muted": "#4a4a4a",
+        "accent": "#5b5b5b",
+        "border": "#c4c4c4",
+        "grid": "#cdcdcd",
+    },
+    "Copilot": {
+        "bg": "#eef3ff",
+        "surface": "#ffffff",
+        "surface_alt": "#f4f6ff",
+        "text": "#1a1f36",
+        "muted": "#4a5678",
+        "accent": "#2a63f6",
+        "border": "#d8e2ff",
+        "grid": "#dce5ff",
     },
 }
 
@@ -540,7 +550,14 @@ def build_html_report(
     selected_kpi_cards: list[str],
 ) -> str:
     theme = EXPORT_THEMES[theme_name]
-    is_dark = theme_name == "Midnight"
+    theme_variant = {
+        "Aurora Light": "aurora",
+        "Midnight": "midnight",
+        "Forest Glass": "forest",
+        "Boardroom Contrast": "boardroom",
+        "Copilot": "copilot",
+    }.get(theme_name, "aurora")
+    is_dark = theme_variant == "midnight"
     summary = summarize_statuses(filtered_df)
     total = summary["total"] if summary["total"] else 1
     kpi_all = [
@@ -563,41 +580,136 @@ def build_html_report(
     if "priority" in filtered_df.columns:
         priority_values = sorted([str(v) for v in filtered_df["priority"].dropna().unique()])
     generated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    page_bg = (
-        "radial-gradient(1200px 620px at -8% -14%, rgba(56,189,248,.18), transparent 58%),"
-        "radial-gradient(960px 560px at 105% -8%, rgba(99,102,241,.16), transparent 55%),"
-        "linear-gradient(165deg, #0b1220 0%, #111a2b 100%)"
-        if is_dark
-        else "radial-gradient(1200px 620px at -8% -14%, rgba(59,130,246,.18), transparent 58%),"
-        "radial-gradient(960px 560px at 105% -8%, rgba(16,185,129,.16), transparent 55%),"
-        "linear-gradient(165deg, var(--bg) 0%, #f7f9fc 100%)"
-    )
-    hero_bg = (
-        "linear-gradient(145deg, rgba(17,26,43,.92), rgba(23,35,58,.86))"
-        if is_dark
-        else "linear-gradient(145deg, rgba(255,255,255,.96), rgba(255,255,255,.84))"
-    )
-    panel_bg = (
-        "linear-gradient(165deg, rgba(17,26,43,.94), rgba(23,35,58,.84))"
-        if is_dark
-        else "linear-gradient(165deg, rgba(255,255,255,.98), rgba(241,245,249,.86))"
-    )
-    table_bg = (
-        "linear-gradient(170deg, rgba(17,26,43,.96), rgba(23,35,58,.9))"
-        if is_dark
-        else "linear-gradient(170deg, rgba(255,255,255,.98), rgba(248,250,252,.95))"
-    )
-    table_header_bg = "linear-gradient(180deg,#1b2942,#23334f)" if is_dark else "linear-gradient(180deg,#f8fafc,#eef2f7)"
-    table_header_text = "#cbd5e1" if is_dark else "#475569"
-    border_rgba = "rgba(148,163,184,.38)" if is_dark else "rgba(255,255,255,.9)"
-    soft_border = "rgba(71,85,105,.55)" if is_dark else "rgba(203,213,225,.9)"
-    white_sheen = "rgba(255,255,255,.08)" if is_dark else "rgba(255,255,255,.9)"
-    track_bg = "#23334f" if is_dark else "#dbe3ef"
-    input_bg = "rgba(15,23,42,.55)" if is_dark else "rgba(255,255,255,.86)"
-    btn_bg = "linear-gradient(180deg,#1e293b,#0f172a)" if is_dark else "linear-gradient(180deg,#f8fafc,#e2e8f0)"
-    btn_text = "#e2e8f0" if is_dark else "#334155"
-    row_even_bg = "rgba(30,41,59,.52)" if is_dark else "rgba(248,250,252,.82)"
-    link_hover = "#93c5fd" if is_dark else "#1d4ed8"
+    if theme_variant == "midnight":
+        page_bg = "radial-gradient(1200px 620px at -8% -14%, rgba(56,189,248,.18), transparent 58%),radial-gradient(960px 560px at 105% -8%, rgba(99,102,241,.16), transparent 55%),linear-gradient(165deg, #0b1220 0%, #111a2b 100%)"
+        hero_bg = "linear-gradient(145deg, rgba(17,26,43,.92), rgba(23,35,58,.86))"
+        panel_bg = "linear-gradient(165deg, rgba(17,26,43,.94), rgba(23,35,58,.84))"
+        table_bg = "linear-gradient(170deg, rgba(17,26,43,.96), rgba(23,35,58,.9))"
+        table_header_bg = "linear-gradient(180deg,#1b2942,#23334f)"
+        table_header_text = "#cbd5e1"
+        border_rgba = "rgba(148,163,184,.38)"
+        soft_border = "rgba(71,85,105,.55)"
+        white_sheen = "rgba(255,255,255,.08)"
+        track_bg = "#23334f"
+        input_bg = "rgba(15,23,42,.55)"
+        btn_bg = "linear-gradient(180deg,#1e293b,#0f172a)"
+        btn_text = "#e2e8f0"
+        row_even_bg = "rgba(30,41,59,.52)"
+        link_hover = "#93c5fd"
+        hero_glow_1 = "#7c4dff4a"
+        hero_glow_2 = "#18a7ff3d"
+        card_glow = "#d946ef2e"
+        pill_overlay = "linear-gradient(120deg,#2a63f61a,#d946ef1a)"
+        button_hover = "linear-gradient(120deg,#18a7ff2a,#7c4dff2a)"
+    elif theme_variant == "forest":
+        page_bg = "radial-gradient(1100px 600px at -10% -15%, rgba(16,185,129,.2), transparent 56%),radial-gradient(900px 500px at 110% -10%, rgba(34,197,94,.16), transparent 54%),linear-gradient(165deg, #ecfff8 0%, #e6f9f0 100%)"
+        hero_bg = "linear-gradient(145deg, rgba(249,255,252,.96), rgba(236,251,244,.86))"
+        panel_bg = "linear-gradient(165deg, rgba(249,255,252,.98), rgba(230,247,239,.9))"
+        table_bg = "linear-gradient(170deg, rgba(249,255,252,.98), rgba(232,248,240,.95))"
+        table_header_bg = "linear-gradient(180deg,#f0fdf8,#ddf7eb)"
+        table_header_text = "#1f5e4c"
+        border_rgba = "rgba(190,234,216,.92)"
+        soft_border = "rgba(155,213,190,.9)"
+        white_sheen = "rgba(255,255,255,.92)"
+        track_bg = "#d8efe5"
+        input_bg = "rgba(255,255,255,.88)"
+        btn_bg = "linear-gradient(180deg,#f4fff9,#dcf5ea)"
+        btn_text = "#205d4c"
+        row_even_bg = "rgba(236,253,245,.85)"
+        link_hover = "#047857"
+        hero_glow_1 = "#22c55e3a"
+        hero_glow_2 = "#14b8a635"
+        card_glow = "#34d39933"
+        pill_overlay = "linear-gradient(120deg,#22c55e1f,#2dd4bf1f)"
+        button_hover = "linear-gradient(120deg,#22c55e24,#14b8a624)"
+    elif theme_variant == "boardroom":
+        page_bg = "linear-gradient(165deg, #f2f2f2 0%, #e9e9e9 100%)"
+        hero_bg = "linear-gradient(145deg, rgba(255,255,255,.97), rgba(244,244,244,.94))"
+        panel_bg = "linear-gradient(165deg, rgba(255,255,255,.99), rgba(240,240,240,.94))"
+        table_bg = "linear-gradient(170deg, rgba(255,255,255,.99), rgba(242,242,242,.96))"
+        table_header_bg = "linear-gradient(180deg,#f3f3f3,#e7e7e7)"
+        table_header_text = "#4b4b4b"
+        border_rgba = "rgba(196,196,196,.95)"
+        soft_border = "rgba(186,186,186,.9)"
+        white_sheen = "rgba(255,255,255,.9)"
+        track_bg = "#d8d8d8"
+        input_bg = "rgba(255,255,255,.9)"
+        btn_bg = "linear-gradient(180deg,#f5f5f5,#e2e2e2)"
+        btn_text = "#3f3f3f"
+        row_even_bg = "rgba(244,244,244,.84)"
+        link_hover = "#2f2f2f"
+        hero_glow_1 = "#a8a8a844"
+        hero_glow_2 = "#bdbdbd30"
+        card_glow = "#9ca3af2e"
+        pill_overlay = "linear-gradient(120deg,#d4d4d41f,#f0f0f01f)"
+        button_hover = "linear-gradient(120deg,#e8e8e8,#d8d8d8)"
+    elif theme_variant == "copilot":
+        page_bg = (
+            "radial-gradient(1100px 620px at -5% -12%, rgba(24,167,255,.24), transparent 58%),"
+            "radial-gradient(980px 560px at 110% -12%, rgba(217,70,239,.2), transparent 56%),"
+            "radial-gradient(800px 420px at 52% 115%, rgba(255,138,76,.22), transparent 62%),"
+            "linear-gradient(165deg, #eef3ff 0%, #f8fbff 100%)"
+        )
+        hero_bg = (
+            "linear-gradient(115deg, rgba(42,99,246,.12), rgba(24,167,255,.1), rgba(124,77,255,.1), rgba(217,70,239,.12), rgba(255,138,76,.12)),"
+            "linear-gradient(145deg, rgba(255,255,255,.96), rgba(246,248,255,.92))"
+        )
+        panel_bg = (
+            "linear-gradient(120deg, rgba(42,99,246,.08), rgba(24,167,255,.08), rgba(124,77,255,.08), rgba(217,70,239,.08), rgba(255,138,76,.08)),"
+            "linear-gradient(165deg, rgba(255,255,255,.98), rgba(242,246,255,.92))"
+        )
+        table_bg = (
+            "linear-gradient(110deg, rgba(42,99,246,.06), rgba(24,167,255,.06), rgba(124,77,255,.06), rgba(217,70,239,.06), rgba(255,138,76,.06)),"
+            "linear-gradient(170deg, rgba(255,255,255,.98), rgba(245,248,255,.95))"
+        )
+        table_header_bg = "linear-gradient(90deg,#eaf1ff,#e8f5ff,#efe9ff,#ffeef9,#fff2ea)"
+        table_header_text = "#3d4c74"
+        border_rgba = "rgba(206,220,255,.95)"
+        soft_border = "rgba(186,202,240,.9)"
+        white_sheen = "rgba(255,255,255,.92)"
+        track_bg = "#dce6ff"
+        input_bg = "rgba(255,255,255,.92)"
+        btn_bg = "linear-gradient(120deg,#e6eeff,#e7f5ff,#f0e8ff,#ffe8f6,#ffefe7)"
+        btn_text = "#30456f"
+        row_even_bg = "rgba(241,246,255,.88)"
+        link_hover = "#7c4dff"
+        hero_glow_1 = "#7c4dff4f"
+        hero_glow_2 = "#18a7ff45"
+        card_glow = "#ff8a4c35"
+        pill_overlay = "linear-gradient(120deg,#2a63f62e,#18a7ff25,#7c4dff25,#d946ef24,#ff8a4c24)"
+        button_hover = "linear-gradient(120deg,#2a63f638,#18a7ff2e,#7c4dff2e,#d946ef2e,#ff8a4c2a)"
+    else:  # aurora
+        page_bg = "radial-gradient(1200px 620px at -8% -14%, rgba(59,130,246,.22), transparent 58%),radial-gradient(960px 560px at 105% -8%, rgba(168,85,247,.16), transparent 55%),linear-gradient(165deg, #eef4ff 0%, #f7f9fc 100%)"
+        hero_bg = "linear-gradient(145deg, rgba(255,255,255,.96), rgba(245,249,255,.9))"
+        panel_bg = "linear-gradient(165deg, rgba(255,255,255,.98), rgba(241,245,255,.9))"
+        table_bg = "linear-gradient(170deg, rgba(255,255,255,.98), rgba(245,248,255,.96))"
+        table_header_bg = "linear-gradient(180deg,#f5f8ff,#e9efff)"
+        table_header_text = "#405072"
+        border_rgba = "rgba(214,228,255,.95)"
+        soft_border = "rgba(194,213,247,.9)"
+        white_sheen = "rgba(255,255,255,.92)"
+        track_bg = "#dbe6fb"
+        input_bg = "rgba(255,255,255,.9)"
+        btn_bg = "linear-gradient(180deg,#f8faff,#e5ecff)"
+        btn_text = "#334c7a"
+        row_even_bg = "rgba(242,246,255,.84)"
+        link_hover = "#1e40af"
+        hero_glow_1 = "#7c4dff3f"
+        hero_glow_2 = "#18a7ff33"
+        card_glow = "#2a63f633"
+        pill_overlay = "linear-gradient(120deg,#2a63f61f,#d946ef1f)"
+        button_hover = "linear-gradient(120deg,#18a7ff22,#7c4dff20)"
+
+    if theme_variant == "copilot":
+        kpi_gradient = {
+            "Total checks": "linear-gradient(90deg,#2a63f6,#18a7ff,#7c4dff)",
+            "Readiness score": "linear-gradient(90deg,#2a63f6,#18a7ff,#7c4dff)",
+            "Success": "linear-gradient(90deg,#36d399,#18a7ff)",
+            "Needs attention": "linear-gradient(90deg,#ff8a4c,#d946ef)",
+            "Warnings": "linear-gradient(90deg,#f6c945,#ff8a4c)",
+            "Critical": "linear-gradient(90deg,#ff8a4c,#d946ef,#7c4dff)",
+        }
+        kpi_cards = [(title, value, pct, kpi_gradient.get(title, color)) for title, value, pct, color in kpi_cards]
 
     html_parts: list[str] = [
         "<!doctype html>",
@@ -615,16 +727,16 @@ def build_html_report(
         "border-radius:20px;padding:26px 28px;margin-bottom:18px;"
         f"box-shadow:0 18px 44px rgba(15,23,42,.26), inset 0 1px 0 {white_sheen};}}",
         ".hero:before{content:'';position:absolute;inset:auto -12% -55% auto;width:420px;height:420px;border-radius:50%;"
-        "background:radial-gradient(circle, #7c4dff4a, transparent 68%);pointer-events:none;}",
+        f"background:radial-gradient(circle, {hero_glow_1}, transparent 68%);pointer-events:none;}}",
         ".hero:after{content:'';position:absolute;left:-130px;top:-150px;width:360px;height:360px;border-radius:50%;"
-        "background:radial-gradient(circle, #18a7ff3d, transparent 72%);pointer-events:none;}",
+        f"background:radial-gradient(circle, {hero_glow_2}, transparent 72%);pointer-events:none;}}",
         ".hero-head{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;}",
         ".logo-wrap{display:flex;align-items:center;gap:16px;z-index:2;position:relative;}",
         ".logo{max-height:88px;max-width:330px;object-fit:contain;display:block;filter:drop-shadow(0 8px 14px rgba(15,23,42,.18));}",
         ".hero h1{font-size:33px;letter-spacing:-.02em;}",
         f".subtitle{{margin-top:6px;color:var(--muted);font-size:14px;}}",
         ".meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}",
-        f".pill{{background:linear-gradient(120deg,#2a63f61a,#d946ef1a),{input_bg};border:1px solid {border_rgba};padding:8px 13px;border-radius:999px;"
+        f".pill{{background:{pill_overlay},{input_bg};border:1px solid {border_rgba};padding:8px 13px;border-radius:999px;"
         "font-size:12px;font-weight:600;color:var(--muted);box-shadow:0 8px 18px rgba(15,23,42,.12);}",
         ".section{background:transparent;margin-bottom:14px;position:relative;}",
         ".section h2{margin:8px 0 10px;}",
@@ -650,7 +762,7 @@ def build_html_report(
         f"border:1px solid {border_rgba};border-radius:14px;padding:13px;"
         f"box-shadow:0 14px 28px rgba(2,6,23,.2), inset 0 1px 0 {white_sheen};}}",
         ".card:after{content:'';position:absolute;inset:auto -55px -70px auto;width:130px;height:130px;border-radius:50%;"
-        "background:radial-gradient(circle, #d946ef2e, transparent 70%);pointer-events:none;}",
+        f"background:radial-gradient(circle, {card_glow}, transparent 70%);pointer-events:none;}}",
         ".card-label{font-size:12px;color:var(--muted);font-weight:600;}",
         ".card-value{font-size:29px;font-weight:800;color:var(--text);line-height:1.1;margin:2px 0 8px;}",
         f".track{{height:8px;background:{track_bg};border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(15,23,42,.2);}}",
@@ -662,7 +774,7 @@ def build_html_report(
         f"background:{input_bg};color:var(--text);box-shadow:inset 0 1px 2px rgba(15,23,42,.15);}}",
         f".table-toolbar button{{border:1px solid {soft_border};background:{btn_bg};color:{btn_text};"
         "border-radius:11px;padding:9px 13px;cursor:pointer;font-weight:700;}",
-        ".table-toolbar button:hover{background:linear-gradient(120deg,#18a7ff2a,#7c4dff2a);}",
+        f".table-toolbar button:hover{{background:{button_hover};}}",
         ".table-toolbar .count{color:var(--muted);font-size:12px;justify-self:end;font-weight:600;}",
         "@media (max-width:1100px){.chart-grid{grid-template-columns:1fr;}.cards{grid-template-columns:repeat(2,minmax(140px,1fr));}}",
         "@media (max-width:1100px){.table-toolbar{grid-template-columns:1fr 1fr;}}",

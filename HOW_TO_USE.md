@@ -56,7 +56,12 @@ You can control what appears in the output:
 
 1. Go to **Export customization**.
 2. Set report title.
-3. Choose theme (all themes include Copilot-inspired color accents).
+3. Choose theme:
+   - Aurora Light
+   - Midnight
+   - Forest Glass
+   - Boardroom Contrast
+   - Copilot (full multi-color Copilot-inspired gradients)
 4. Upload optional logo.
 5. Click **Export dashboard (single HTML)**.
 
