@@ -81,6 +81,16 @@ STATUS_COLOR_MAP = {
     "Missing Prerequisite": "#7c2d12",
 }
 
+COPILOT_BRAND = {
+    "blue": "#2a63f6",
+    "cyan": "#18a7ff",
+    "green": "#36d399",
+    "purple": "#7c4dff",
+    "pink": "#d946ef",
+    "orange": "#ff8a4c",
+    "yellow": "#f6c945",
+}
+
 
 def summarize_statuses(df: pd.DataFrame) -> dict[str, int]:
     status_counts = df["status"].fillna("Unknown").value_counts() if "status" in df.columns else pd.Series(dtype=int)
@@ -157,18 +167,24 @@ def apply_filters(df: pd.DataFrame) -> pd.DataFrame:
     st.sidebar.header("Filters")
     filtered = df.copy()
 
+    search = st.sidebar.text_input("Search text")
+
     for col in ["service", "status", "priority"]:
         if col in filtered.columns:
             options = sorted(str(v) for v in filtered[col].dropna().unique())
             selected = st.sidebar.multiselect(f"{col.title()}", options, default=options)
             filtered = filtered[filtered[col].astype(str).isin(selected)]
 
+    if "feature" in filtered.columns:
+        finding_options = sorted(str(v) for v in filtered["feature"].dropna().unique())
+        selected_findings = st.sidebar.multiselect("Finding", finding_options, default=finding_options)
+        filtered = filtered[filtered["feature"].astype(str).isin(selected_findings)]
+
     if "status" in filtered.columns:
         actionable_only = st.sidebar.checkbox("Show only non-success findings", value=False)
         if actionable_only:
             filtered = filtered[~filtered["status"].fillna("").str.lower().eq("success")]
 
-    search = st.sidebar.text_input("Search text")
     if search:
         mask = pd.Series(False, index=filtered.index)
         for col in ["feature", "observation", "recommendation"]:
@@ -177,6 +193,21 @@ def apply_filters(df: pd.DataFrame) -> pd.DataFrame:
         filtered = filtered[mask]
 
     return filtered
+
+
+def select_findings_columns(df: pd.DataFrame) -> list[str]:
+    default_columns = ["service", "feature", "status", "priority", "observation", "recommendation"]
+    available = [c for c in default_columns if c in df.columns]
+    if not available:
+        return list(df.columns)
+    selected = st.sidebar.multiselect("Findings columns", available, default=available)
+    return selected if selected else available
+
+
+def select_report_kpi_cards() -> list[str]:
+    options = ["Total checks", "Readiness score", "Success", "Needs attention", "Warnings", "Critical"]
+    selected = st.sidebar.multiselect("Report KPI cards", options, default=options)
+    return selected if selected else options
 
 
 def status_score(df: pd.DataFrame) -> float:
@@ -193,6 +224,7 @@ def render_kpis(df: pd.DataFrame) -> None:
     total = summary["total"] if summary["total"] else 1
     cards = [
         ("Total checks", summary["total"], score / 100, "#2563eb"),
+        ("Readiness score", f"{score:.1f}%", score / 100, "#2563eb"),
         ("Success", summary["success"], summary["success"] / total, "#16a34a"),
         ("Needs attention", summary["needs_attention"], summary["needs_attention"] / total, "#dc2626"),
         ("Warnings", summary["warning"], summary["warning"] / total, "#f59e0b"),
@@ -218,13 +250,14 @@ def render_kpis(df: pd.DataFrame) -> None:
         """,
         unsafe_allow_html=True,
     )
-    cols = st.columns(5)
+    cols = st.columns(len(cards))
     for col, (title, value, ratio, color) in zip(cols, cards):
+        display_value = f"{value:,}" if isinstance(value, (int, float)) else str(value)
         col.markdown(
             f"""
             <div class="metric-card">
                 <div class="metric-title">{title}</div>
-                <div class="metric-value">{value:,}</div>
+                <div class="metric-value">{display_value}</div>
                 <div class="metric-track"><div class="metric-fill" style="width:{max(0, min(100, ratio * 100)):.1f}%;background:{color};"></div></div>
             </div>
             """,
@@ -423,9 +456,9 @@ def create_licensed_vs_configured_figure(df: pd.DataFrame):
     return fig
 
 
-def render_table(df: pd.DataFrame) -> None:
+def render_table(df: pd.DataFrame, selected_columns: list[str]) -> None:
     st.subheader("Detailed findings")
-    display_cols = [c for c in ["service", "feature", "status", "priority", "observation", "recommendation"] if c in df.columns]
+    display_cols = [c for c in selected_columns if c in df.columns]
     st.dataframe(df[display_cols] if display_cols else df, use_container_width=True, hide_index=True)
 
     csv_bytes = df.to_csv(index=False).encode("utf-8")
@@ -455,6 +488,15 @@ def style_figure_for_export(fig, theme: dict) -> None:
         legend={"bgcolor": theme["surface"], "bordercolor": theme["border"], "borderwidth": 1},
         margin={"l": 40, "r": 25, "t": 60, "b": 40},
         hoverlabel={"bgcolor": theme["surface"], "font_size": 12},
+        colorway=[
+            COPILOT_BRAND["blue"],
+            COPILOT_BRAND["purple"],
+            COPILOT_BRAND["cyan"],
+            COPILOT_BRAND["pink"],
+            COPILOT_BRAND["green"],
+            COPILOT_BRAND["orange"],
+            COPILOT_BRAND["yellow"],
+        ],
     )
     for trace in fig.data:
         if hasattr(trace, "marker") and hasattr(trace.marker, "color"):
@@ -494,11 +536,23 @@ def build_html_report(
     export_title: str,
     theme_name: str,
     logo_data_uri: Optional[str],
+    selected_columns: list[str],
+    selected_kpi_cards: list[str],
 ) -> str:
     theme = EXPORT_THEMES[theme_name]
     is_dark = theme_name == "Midnight"
     summary = summarize_statuses(filtered_df)
     total = summary["total"] if summary["total"] else 1
+    kpi_all = [
+        ("Total checks", f"{summary['total']}", readiness, "#2563eb"),
+        ("Readiness score", f"{readiness:.1f}%", readiness, "#2563eb"),
+        ("Success", f"{summary['success']}", (summary["success"] / total) * 100, "#16a34a"),
+        ("Needs attention", f"{summary['needs_attention']}", (summary["needs_attention"] / total) * 100, "#f43f5e"),
+        ("Warnings", f"{summary['warning']}", (summary["warning"] / total) * 100, "#f59e0b"),
+        ("Critical", f"{summary['critical']}", (summary["critical"] / total) * 100, "#b91c1c"),
+    ]
+    selected_set = set(selected_kpi_cards)
+    kpi_cards = [item for item in kpi_all if item[0] in selected_set] or kpi_all
     service_values = []
     status_values = []
     priority_values = []
@@ -551,7 +605,8 @@ def build_html_report(
         "<meta name='viewport' content='width=device-width,initial-scale=1'>",
         "<title>M365 Copilot Readiness Dashboard Export</title>",
         "<style>",
-        f":root{{--bg:{theme['bg']};--surface:{theme['surface']};--surface-alt:{theme['surface_alt']};--text:{theme['text']};--muted:{theme['muted']};--accent:{theme['accent']};--border:{theme['border']};--grid:{theme['grid']};}}",
+        f":root{{--bg:{theme['bg']};--surface:{theme['surface']};--surface-alt:{theme['surface_alt']};--text:{theme['text']};--muted:{theme['muted']};--accent:{theme['accent']};--border:{theme['border']};--grid:{theme['grid']};"
+        f"--cp-blue:{COPILOT_BRAND['blue']};--cp-cyan:{COPILOT_BRAND['cyan']};--cp-green:{COPILOT_BRAND['green']};--cp-purple:{COPILOT_BRAND['purple']};--cp-pink:{COPILOT_BRAND['pink']};--cp-orange:{COPILOT_BRAND['orange']};--cp-yellow:{COPILOT_BRAND['yellow']};}}",
         f"body{{font-family:'Segoe UI',Inter,Arial,sans-serif;margin:0;color:var(--text);background:{page_bg};}}",
         ".container{max-width:1540px;margin:24px auto;padding:0 18px 34px;}",
         ".hero{position:relative;overflow:hidden;background:"
@@ -560,16 +615,16 @@ def build_html_report(
         "border-radius:20px;padding:26px 28px;margin-bottom:18px;"
         f"box-shadow:0 18px 44px rgba(15,23,42,.26), inset 0 1px 0 {white_sheen};}}",
         ".hero:before{content:'';position:absolute;inset:auto -12% -55% auto;width:420px;height:420px;border-radius:50%;"
-        "background:radial-gradient(circle, rgba(37,99,235,.22), rgba(37,99,235,0) 68%);pointer-events:none;}",
+        "background:radial-gradient(circle, #7c4dff4a, transparent 68%);pointer-events:none;}",
         ".hero:after{content:'';position:absolute;left:-130px;top:-150px;width:360px;height:360px;border-radius:50%;"
-        "background:radial-gradient(circle, rgba(14,165,233,.18), rgba(14,165,233,0) 72%);pointer-events:none;}",
+        "background:radial-gradient(circle, #18a7ff3d, transparent 72%);pointer-events:none;}",
         ".hero-head{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;}",
         ".logo-wrap{display:flex;align-items:center;gap:16px;z-index:2;position:relative;}",
         ".logo{max-height:88px;max-width:330px;object-fit:contain;display:block;filter:drop-shadow(0 8px 14px rgba(15,23,42,.18));}",
         ".hero h1{font-size:33px;letter-spacing:-.02em;}",
         f".subtitle{{margin-top:6px;color:var(--muted);font-size:14px;}}",
         ".meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}",
-        f".pill{{background:{input_bg};border:1px solid {border_rgba};padding:8px 13px;border-radius:999px;"
+        f".pill{{background:linear-gradient(120deg,#2a63f61a,#d946ef1a),{input_bg};border:1px solid {border_rgba};padding:8px 13px;border-radius:999px;"
         "font-size:12px;font-weight:600;color:var(--muted);box-shadow:0 8px 18px rgba(15,23,42,.12);}",
         ".section{background:transparent;margin-bottom:14px;position:relative;}",
         ".section h2{margin:8px 0 10px;}",
@@ -590,12 +645,12 @@ def build_html_report(
         f"box-shadow:0 18px 36px rgba(2,6,23,.24), inset 0 1px 0 {white_sheen};}}"
         ".chart-block:before{content:'';position:absolute;left:0;right:0;top:0;height:78px;"
         f"background:linear-gradient(180deg, {white_sheen}, rgba(255,255,255,0));pointer-events:none;}}",
-        ".cards{display:grid;grid-template-columns:repeat(6,minmax(140px,1fr));gap:11px;margin-top:14px;}",
+        ".cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:11px;margin-top:14px;}",
         f".card{{position:relative;overflow:hidden;background:{panel_bg};"
         f"border:1px solid {border_rgba};border-radius:14px;padding:13px;"
         f"box-shadow:0 14px 28px rgba(2,6,23,.2), inset 0 1px 0 {white_sheen};}}",
         ".card:after{content:'';position:absolute;inset:auto -55px -70px auto;width:130px;height:130px;border-radius:50%;"
-        "background:radial-gradient(circle, rgba(37,99,235,.16), rgba(37,99,235,0) 70%);pointer-events:none;}",
+        "background:radial-gradient(circle, #d946ef2e, transparent 70%);pointer-events:none;}",
         ".card-label{font-size:12px;color:var(--muted);font-weight:600;}",
         ".card-value{font-size:29px;font-weight:800;color:var(--text);line-height:1.1;margin:2px 0 8px;}",
         f".track{{height:8px;background:{track_bg};border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(15,23,42,.2);}}",
@@ -607,6 +662,7 @@ def build_html_report(
         f"background:{input_bg};color:var(--text);box-shadow:inset 0 1px 2px rgba(15,23,42,.15);}}",
         f".table-toolbar button{{border:1px solid {soft_border};background:{btn_bg};color:{btn_text};"
         "border-radius:11px;padding:9px 13px;cursor:pointer;font-weight:700;}",
+        ".table-toolbar button:hover{background:linear-gradient(120deg,#18a7ff2a,#7c4dff2a);}",
         ".table-toolbar .count{color:var(--muted);font-size:12px;justify-self:end;font-weight:600;}",
         "@media (max-width:1100px){.chart-grid{grid-template-columns:1fr;}.cards{grid-template-columns:repeat(2,minmax(140px,1fr));}}",
         "@media (max-width:1100px){.table-toolbar{grid-template-columns:1fr 1fr;}}",
@@ -620,16 +676,14 @@ def build_html_report(
         "</div>",
         "</div>",
         f"<div class='meta'><span class='pill'>Generated: {generated_at}</span></div>",
-        "<div class='cards'>"
-        f"<div class='card'><div class='card-label'>Total checks</div><div class='card-value'>{summary['total']}</div><div class='track'><div class='fill' style='width:{readiness:.1f}%;background:#2563eb;'></div></div></div>"
-        f"<div class='card'><div class='card-label'>Readiness score</div><div class='card-value'>{readiness:.1f}%</div><div class='track'><div class='fill' style='width:{readiness:.1f}%;background:#2563eb;'></div></div></div>"
-        f"<div class='card'><div class='card-label'>Success</div><div class='card-value'>{summary['success']}</div><div class='track'><div class='fill' style='width:{(summary['success']/total)*100:.1f}%;background:#16a34a;'></div></div></div>"
-        f"<div class='card'><div class='card-label'>Needs attention</div><div class='card-value'>{summary['needs_attention']}</div><div class='track'><div class='fill' style='width:{(summary['needs_attention']/total)*100:.1f}%;background:#f43f5e;'></div></div></div>"
-        f"<div class='card'><div class='card-label'>Warnings</div><div class='card-value'>{summary['warning']}</div><div class='track'><div class='fill' style='width:{(summary['warning']/total)*100:.1f}%;background:#f59e0b;'></div></div></div>"
-        f"<div class='card'><div class='card-label'>Critical</div><div class='card-value'>{summary['critical']}</div><div class='track'><div class='fill' style='width:{(summary['critical']/total)*100:.1f}%;background:#b91c1c;'></div></div></div>"
-        "</div>",
-        "</div>",
+        "<div class='cards'>",
     ]
+    for title, value, pct, color in kpi_cards:
+        html_parts.append(
+            f"<div class='card'><div class='card-label'>{title}</div><div class='card-value'>{value}</div>"
+            f"<div class='track'><div class='fill' style='width:{max(0.0, min(100.0, pct)):.1f}%;background:{color};'></div></div></div>"
+        )
+    html_parts.append("</div>")
 
     first_chart = True
     html_parts.append("<div class='chart-grid'>")
@@ -654,6 +708,10 @@ def build_html_report(
     cols_to_remove = [c for c in ["link_text", "link_url", "reference_link"] if c in export_df.columns]
     if cols_to_remove:
         export_df = export_df.drop(columns=cols_to_remove)
+    if selected_columns:
+        cols_for_export = [c for c in selected_columns if c in export_df.columns]
+        if cols_for_export:
+            export_df = export_df[cols_for_export]
 
     html_parts.append("<div class='section'><h2>Filtered findings</h2>")
     html_parts.append("<div class='table-toolbar'>")
@@ -766,6 +824,8 @@ def main() -> None:
 
     top_n = st.sidebar.slider("Top N items in charts", min_value=5, max_value=20, value=10, step=1)
     filtered = apply_filters(df)
+    selected_findings_columns = select_findings_columns(df)
+    selected_report_kpis = select_report_kpi_cards()
     if filtered.empty:
         st.warning("No rows match the selected filters.")
         return
@@ -821,7 +881,7 @@ def main() -> None:
                 st.info("Capability comparison needs service and status columns.")
 
     with tabs[2]:
-        render_table(filtered)
+        render_table(filtered, selected_findings_columns)
 
     st.subheader("Export customization")
     export_col1, export_col2 = st.columns([2, 1])
@@ -843,6 +903,8 @@ def main() -> None:
         export_title=export_title.strip() or "M365 Copilot Readiness Dashboard",
         theme_name=theme_name,
         logo_data_uri=logo_data_uri,
+        selected_columns=selected_findings_columns,
+        selected_kpi_cards=selected_report_kpis,
     )
     st.download_button(
         "Export dashboard (single HTML)",

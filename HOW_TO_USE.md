@@ -38,23 +38,31 @@ py -3 -m streamlit run app.py
 
 Use sidebar filters to narrow by:
 
+- search text
 - service
 - status
 - priority
-- text search
+- finding (`feature`)
 - non-success-only view
 
-## 5. Export a premium single HTML report
+## 5. Choose report content
+
+You can control what appears in the output:
+
+- **Findings columns** selector (service, feature, status, priority, observation, recommendation)
+- **Report KPI cards** selector (pick which KPI cards are included in HTML)
+
+## 6. Export a premium single HTML report
 
 1. Go to **Export customization**.
 2. Set report title.
-3. Choose theme.
+3. Choose theme (all themes include Copilot-inspired color accents).
 4. Upload optional logo.
 5. Click **Export dashboard (single HTML)**.
 
 The exported file is self-contained and can be shared directly.
 
-## 6. Use filters inside exported HTML
+## 7. Use filters inside exported HTML
 
 In the **Filtered findings** section of the exported report, use:
 

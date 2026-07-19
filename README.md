@@ -25,12 +25,20 @@ You are responsible for validating all assessment results and recommendations be
 ## Highlights
 
 - Interactive dashboard views for readiness, risk, and capability posture
-- Advanced filtering (service, status, priority, free-text, non-success focus)
+- Advanced filtering:
+  - search text
+  - service / status / priority
+  - finding (`feature`)
+  - non-success focus
+- Column selection for findings table (`service`, `feature`, `status`, `priority`, `observation`, `recommendation`)
+- Report KPI selection (choose which KPI cards appear in exported HTML)
 - Premium export to **single HTML file** with:
   - theme selection
+  - Copilot-inspired visual accents across all themes
   - custom logo
   - embedded charts
   - embedded findings table + table-level filters
+  - grouped chart layout and modern executive styling
 - No backend required; runs fully on a local PC
 
 ## Tech Stack
@@ -79,11 +87,21 @@ Column names are normalized, so minor naming variations are supported.
 
 If your file does not come from the Microsoft readiness assessment workflow, some visuals may not map correctly.
 
+## Current Visuals
+
+- Status mix donut
+- Readiness score gauge
+- By severity bars (Success vs Needs attention)
+- By category line chart (needs attention)
+- Top services by status
+- Licensed capability vs configured capability
+
 ## Usage Guide
 
 For full walkthrough instructions, see:
 
 - [HOW_TO_USE.md](HOW_TO_USE.md)
+- [PUBLISHING_GUIDE.md](PUBLISHING_GUIDE.md)
 
 ## License
 
