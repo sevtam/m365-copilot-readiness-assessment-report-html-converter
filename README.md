@@ -1,4 +1,6 @@
-# M365 Copilot Readiness Dashboard Generator
+# m365-copilot-readiness-assessment-report-html-converter
+
+M365 Copilot Readiness Assessment Report HTML Converter.
 
 Local Streamlit application for turning Microsoft 365 Copilot readiness assessment exports (`.csv` / `.xlsx`) into interactive, executive-style dashboards and premium single-file HTML reports.
 
