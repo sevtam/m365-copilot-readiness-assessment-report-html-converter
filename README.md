@@ -89,6 +89,26 @@ Column names are normalized, so minor naming variations are supported.
 
 If your file does not come from the Microsoft readiness assessment workflow, some visualisations may not map correctly.
 
+## Sample Files (for quick trial)
+
+If you want to try the tool without first running Microsoft’s assessment, use the sample files in:
+
+- `report samples/`
+
+Included in that folder:
+
+- Sample input data:
+  - `m365_recommendations_20260520_134954.csv`
+  - `m365_recommendations_20260520_134954.xlsx`
+- Sample exported reports for each theme:
+  - `Sample_Aurora Light.html` + `.jpeg`
+  - `Sample_Midnight.html` + `.jpeg`
+  - `Sample_Forest Glass.html` + `.jpeg`
+  - `Sample_Boardroom Contrast.html` + `.jpeg`
+  - `Sample_Copilot.html` + `.jpeg`
+
+These samples are provided for demonstration only. For real tenant reporting, run Microsoft’s readiness assessment and upload that output.
+
 ## Current Visuals
 
 - Status mix donut
@@ -111,6 +131,7 @@ If your file does not come from the Microsoft readiness assessment workflow, som
 For full walkthrough instructions, see:
 
 - [HOW_TO_USE.md](HOW_TO_USE.md)
+- [PUBLISHING_GUIDE.md](PUBLISHING_GUIDE.md)
 
 ## License
 
